@@ -1,0 +1,27 @@
+# Ignore Python cache and virtual environment files
+__pycache__/
+*.py[cod]
+env/
+venv/
+
+# Ignore node_modules for Node.js projects
+node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files
+.idea/
+.vscode/
+
+# Ignore environment configuration files
+.env
+
+
+# Ignore config files containing secrets
+config.json
+secrets.yaml
