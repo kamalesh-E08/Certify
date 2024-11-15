@@ -1,12 +1,8 @@
 import logging
 import os
-from authlib.jose import JsonWebKey
 from flask import Flask, jsonify, redirect, url_for, session, request, render_template
 from authlib.integrations.flask_client import OAuth
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
-import cv2
-import numpy as np
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -15,8 +11,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 import base64
-
-import requests
 
 app = Flask(__name__)
 
@@ -47,18 +41,6 @@ google = oauth.register(
     },
 )
 
-ALLOWED_EXCEL_EXTENSIONS = {'xlsx', 'xls'}
-ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-ALLOWED_FONT_EXTENSIONS = {'ttf', 'otf'}
-FONT_DIR = os.path.join(os.getcwd(), 'fonts')
-
-def allowed_file(filename, allowed_extensions):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
-
-def fetch_jwk_set():
-    response = requests.get('https://www.googleapis.com/oauth2/v3/certs')
-    return response.json()
-
 # Home page
 @app.route('/')
 def index():
@@ -81,96 +63,35 @@ def authorized():
     resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo')
     user_info = resp.json()
 
-    print(user_info)  # Debugging: print user info to check for email
-
-    # if 'email' not in user_info:
-    #     return 'Email not available or permission not granted.'
-
-    session['email'] = user_info['email']
+    session['email'] = user_info.get('email')
     return redirect(url_for('dashboard'))
 
+# Dashboard route to send pre-generated certificates
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if request.method == 'POST':
         excel_file = request.files['excel']
-        certificate_template = request.files['certificate']
-        font_file = request.files.get('font')
-        font_size = int(request.form['fontsize'])
         greeting_message = request.form['greeting']
         body_content = request.form['body']
 
-        certificate_path = os.path.join("uploads", "certificate_template.png")
-        certificate_template.save(certificate_path)
-
-        if font_file and allowed_file(font_file.filename, ALLOWED_FONT_EXTENSIONS):
-            font_path = os.path.join("fonts", font_file.filename)
-            font_file.save(font_path)
-        else:
-            font_path = None
-
+        # Read Excel and get email and certificate path
         df = pd.read_excel(excel_file)
 
+        # Iterate over each row in Excel, sending the certificate to each user
         for index, row in df.iterrows():
             name = row['Name']
             email = row['Email']
+            certificate = row['Certificate']  # Ensure Excel has this column with each certificate's path
 
-            img = Image.open(certificate_path)
-            draw = ImageDraw.Draw(img)
+            # Send email
+            send_email(email, greeting_message, body_content, certificate)
 
-            try:
-                if font_path:
-                    font = ImageFont.truetype(font_path, font_size)
-                else:
-                    font = ImageFont.truetype("arial.ttf", font_size)  # Use a default system font
-            except Exception as e:
-                print(f"Error loading font: {e}")
-                font = ImageFont.load_default()
+        return 'Certificates sent successfully!'
 
-            underline_position = detect_underline(certificate_path)
-            if underline_position:
-                name_position = (underline_position[0], underline_position[1] - font_size)
-            else:
-                name_position = (img.width // 2, img.height // 2)
-
-            text_width, text_height = draw.textsize(name, font=font)
-            centered_position = (name_position[0] - text_width // 2, name_position[1])
-
-            draw.text(centered_position, name, font=font, fill=(0, 0, 0))
-
-            output_path = f"certificates/{name}_certificate.png"
-            img.save(output_path)
-
-            send_email(email, greeting_message, body_content, output_path)
-
-        return 'Certificates generated and sent successfully!'
-    
     return render_template('dashboard.html', user_email=session['email'])
 
-def detect_underline(certificate_path):
-    certificate_img = cv2.imread(certificate_path)
-    gray = cv2.cvtColor(certificate_img, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=100, maxLineGap=10)
-
-    midpoints = []
-    
-    if lines is not None:
-        for line in lines:
-            for x1, y1, x2, y2 in line:
-                if abs(y2 - y1) < 5:  
-                    mid_x = (x1 + x2) // 2
-                    mid_y = (y1 + y2) // 2
-                    midpoints.append((mid_x, mid_y))
-    
-    if midpoints:
-        avg_x = sum(x for x, y in midpoints) // len(midpoints)
-        avg_y = sum(y for x, y in midpoints) // len(midpoints)
-        return (avg_x, avg_y)
-    
-    return None
-
-# Function to send email using Gmail API with better error handling
-def send_email(recipient_email, greeting, body, certificate_path):
+# Function to send email with an attachment using Gmail API
+def send_email(recipient_email, greeting, body, certificate):
     try:
         creds = get_gmail_creds()
         if not creds:
@@ -184,12 +105,17 @@ def send_email(recipient_email, greeting, body, certificate_path):
         message.attach(MIMEText(f"{greeting}\n\n{body}", 'plain'))
 
         # Attach certificate
-        with open(certificate_path, "rb") as f:
-            part = MIMEBase('application', 'octet-stream')
-            part.set_payload(f.read())
-            encoders.encode_base64(part)
-            part.add_header('Content-Disposition', f'attachment; filename={os.path.basename(certificate_path)}')
-            message.attach(part)
+        try:
+            with open(certificate, "rb") as f:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(f.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f'attachment; filename={os.path.basename(certificate)}')
+                message.attach(part)
+        except FileNotFoundError:
+            logging.error(f"File not found: {certificate}")
+            return
+
 
         raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
         send_message = {'raw': raw_message}
@@ -217,24 +143,5 @@ def logout():
     session.pop('email', None)
     return redirect(url_for('index'))
 
-@app.route('/api/font-list', methods=['GET'])
-def get_font_list():
-    try:
-        fonts = [font for font in os.listdir('fonts'   +) if font.endswith(('.ttf', '.otf'))]
-        return jsonify(fonts)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/privacy_policy')
-def privacy_policy():
-    return render_template('privacy_policy.html')
-
 if __name__ == "__main__":
-    if not os.path.exists('certificates'):
-        os.makedirs('certificates')
-    if not os.path.exists('uploads'):
-        os.makedirs('uploads')
-    if not os.path.exists('fonts'):
-        os.makedirs('fonts')
     app.run(debug=True)
