@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Send Certificates</title>
+    <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
-    <h1>Welcome, {{ user_email }}</h1>
-    <form method="POST" enctype="multipart/form-data">
-        <label for="excel">Upload Excel with certificate paths:</label>
-        <input type="file" name="excel" required>
+<body >
+    <div class="dash-body">
+        <h1>Welcome, {{ user_email }}</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <label for="excel">Upload Excel with certificate paths:</label>
+            <input type="file" name="excel" required>
 
-        <label for="greeting">Greeting Message:</label>
-        <input type="text" name="greeting" required>
+            <label for="greeting">Greeting Message:</label>
+            <input type="text" name="greeting" required>
 
-        <label for="body">Email Body Content:</label>
-        <textarea name="body" required></textarea>
+            <label for="body">Email Body Content:</label>
+            <textarea name="body" required></textarea>
 
-        <button type="submit">Send Certificates</button>
-    </form>
+            <button type="submit">Send Certificates</button>
+        </form>
+    </div>
 </body>
 </html>

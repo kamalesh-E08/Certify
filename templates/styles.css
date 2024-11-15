@@ -1,149 +1,93 @@
-/* Basic reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Base styles */
+/* General styles */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Mobile styles */
-  @media only screen and (max-width: 600px) {
-    .container {
-      width: 100%;
-      padding: 10px;
-    }
-  
-    .header {
-      font-size: 20px;
-    }
-  }
-  
-  /* Tablet styles */
-  @media only screen and (min-width: 601px) and (max-width: 1200px) {
-    .container {
-      width: 80%;
-      padding: 20px;
-    }
-  
-    .header {
-      font-size: 24px;
-    }
-  }
-  
-  /* Desktop styles */
-  @media only screen and (min-width: 1201px) {
-    .container {
-      width: 60%;
-      padding: 30px;
-    }
-  
-    .header {
-      font-size: 28px;
-    }
-  }
-  
-
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f8f9fa; /* Light grey background */
-    color: #333; /* Dark grey text */
-} 
-
-/* Container Styling */
-.container {
-    max-width: 600px;
-    margin: 50px auto; /* Centering the container */
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f9;
+  color: #333;
 }
 
-/* Heading Styling */
-h1 {
-    color: #007bff; /* Bootstrap Primary Color */
-    font-size: 2.5rem;
-    margin-bottom: 20px;
+/* Center the content */
+.dash-body {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
-p {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    color: #666;
+/* Title styling */
+.dash-body h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
 }
 
-/* Button Styling */
-.btn {
-    font-size: 1.2rem;
-    padding: 10px 20px;
-    margin-top: 20px;
-    border-radius: 5px;
+/* Form label styles */
+form label {
+  display: block;
+  margin: 15px 0 5px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
 }
 
-/* Input and Label Styling */
-label {
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 10px;
-    display: block;
+/* Input field styles */
+form input[type="file"],
+form input[type="text"],
+form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
-input[type="file"],
-input[type="text"],
-input[type="number"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+/* Textarea styling */
+form textarea {
+  height: 100px;
+  resize: none;
 }
 
-input[type="file"]:focus,
-input[type="text"]:focus,
-input[type="number"]:focus {
-    border-color: #007bff;
-    outline: none;
+/* Submit button */
+form button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 15px;
 }
 
-/* Footer */
-footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #007bff;
-    color: white;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
+form button:hover {
+  background-color: #45a049;
 }
 
-footer a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
+/* Input focus styles */
+form input:focus,
+form textarea:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
 
-footer a:hover {
-    text-decoration: underline;
-}
-
-/* Media Queries for Responsiveness */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .container {
-        padding: 20px;
-        margin: 20px;
-    }
+  .dash-body {
+      margin: 20px;
+      padding: 15px;
+  }
 
-    h1 {
-        font-size: 2rem;
-    }
+  form label {
+      font-size: 13px;
+  }
 
-    .btn {
-        font-size: 1rem;
-    }
+  form button {
+      font-size: 14px;
+  }
 }
