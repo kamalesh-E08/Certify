@@ -34,7 +34,6 @@ form label {
   text-align: left;
 }
 
-/* Input field styles */
 form input[type="file"],
 form input[type="text"],
 form textarea {

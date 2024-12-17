@@ -1,6 +1,6 @@
 import logging
 import os
-from flask import Flask, jsonify, redirect, url_for, session, request, render_template
+from flask import Flask, redirect, url_for, session, request, render_template
 from authlib.integrations.flask_client import OAuth
 import pandas as pd
 from google.oauth2.credentials import Credentials
@@ -49,7 +49,7 @@ def index():
 # Route to handle Google OAuth login
 @app.route('/login')
 def login():
-    session.pop('google_token', None)  # Clear the token to force re-authorization
+    session.pop('google_token', None)  
     redirect_uri = url_for('authorized', _external=True)
     return google.authorize_redirect(redirect_uri)
 
@@ -81,7 +81,7 @@ def dashboard():
         for index, row in df.iterrows():
             name = row['Name']
             email = row['Email']
-            certificate = row['Certificate']  # Ensure Excel has this column with each certificate's path
+            certificate = row['Certificate']
 
             # Send email
             send_email(email, greeting_message, body_content, certificate)
@@ -104,7 +104,6 @@ def send_email(recipient_email, greeting, body, certificate):
         message['subject'] = "Your Certificate"
         message.attach(MIMEText(f"{greeting}\n\n{body}", 'plain'))
 
-        # Attach certificate
         try:
             with open(certificate, "rb") as f:
                 part = MIMEBase('application', 'octet-stream')
