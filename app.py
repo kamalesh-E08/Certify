@@ -17,11 +17,10 @@ app = Flask(__name__)
 # Load secrets from environment variables for security
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID', '974601258161-23cheuut49o1k0va6tf3l9lqh9dust30.apps.googleusercontent.com')
-app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET', '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')
+app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET', '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')
 
 oauth = OAuth(app)
 
-# Gmail API SCOPES
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 # Google OAuth configuration
@@ -66,7 +65,6 @@ def authorized():
     session['email'] = user_info.get('email')
     return redirect(url_for('dashboard'))
 
-# Dashboard route to send pre-generated certificates
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if request.method == 'POST':
@@ -74,7 +72,6 @@ def dashboard():
         greeting_message = request.form['greeting']
         body_content = request.form['body']
 
-        # Read Excel and get email and certificate path
         df = pd.read_excel(excel_file)
 
         # Iterate over each row in Excel, sending the certificate to each user
@@ -83,14 +80,12 @@ def dashboard():
             email = row['Email']
             certificate = row['Certificate']
 
-            # Send email
             send_email(email, greeting_message, body_content, certificate)
 
         return 'Certificates sent successfully!'
 
     return render_template('dashboard.html', user_email=session['email'])
 
-# Function to send email with an attachment using Gmail API
 def send_email(recipient_email, greeting, body, certificate):
     try:
         creds = get_gmail_creds()
@@ -135,7 +130,6 @@ def get_gmail_creds():
             creds.refresh(Request())
     return creds
 
-# Logout route
 @app.route('/logout', methods=['POST'])
 def logout():
     session.pop('google_token', None)
